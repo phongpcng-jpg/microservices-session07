@@ -3,15 +3,15 @@ services:
     image: postgres:17
     restart: unless-stopped
     environment:
-      POSTGRES_DB: product_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "1234$"
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     ports:
-      - "5434:5432"
+      - "${POSTGRES_HOST_PORT:-5434}:5432"
     volumes:
       - product_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d product_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
     image: eureka-service:1.0
     restart: unless-stopped
     ports:
-      - "8761:8761"
+      - "${EUREKA_HOST_PORT:-8761}:8761"
     networks:
       - microservices-network
 
@@ -37,12 +37,12 @@ services:
         condition: service_started
     environment:
       SPRING_CLOUD_CONFIG_ENABLED: "false"
-      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/product_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: "1234$"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://product-db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka/
     ports:
-      - "8086:8086"
+      - "${PRODUCT_HOST_PORT:-8086}:8086"
     networks:
       - microservices-network
 
@@ -56,7 +56,7 @@ services:
       SPRING_CLOUD_CONFIG_ENABLED: "false"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka/
     ports:
-      - "8080:8080"
+      - "${GATEWAY_HOST_PORT:-8080}:8080"
     networks:
       - microservices-network
 
