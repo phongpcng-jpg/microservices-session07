@@ -1,0 +1,17 @@
+services:
+  product-db:
+    image: postgres:17
+    container_name: product-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: product_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234$
+    ports:
+      - "5434:5432"
+    volumes:
+      - product_db_data:/var/lib/postgresql/data
+
+
+volumes:
+  product_db_data:
